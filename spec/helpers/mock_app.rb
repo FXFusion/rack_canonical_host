@@ -1,5 +1,6 @@
 require 'rack/request'
 module RackCanonicalHost
+  # Mock Rack application for testing
   class MockApp
     attr_accessor :last_request
 

@@ -1,4 +1,7 @@
 dependencies:
   pre:
     - gem install bundler
-    - gem update bundler 
+    - gem update bundler
+test:
+  post:
+    - bundle exec rubocop

@@ -1,8 +1,10 @@
-require "rack_canonical_host/version"
-require "rack/request"
-require "uri"
+require 'rack_canonical_host/version'
+require 'rack/request'
+require 'uri'
 
 module RackCanonicalHost
+  # Redirect Tge rack middleware for redirecting requests to configured
+  # hostname
   class Redirect
     attr_reader :canonical_host
     def initialize(app, canonical_host)
@@ -27,7 +29,9 @@ module RackCanonicalHost
     def build_location(request)
       location = "#{request.scheme}://#{canonical_host}"
       location = "#{location}#{request.path}" unless request.path.empty?
-      location = "#{location}?#{request.query_string}" unless request.query_string.empty?
+      unless request.query_string.empty?
+        location = "#{location}?#{request.query_string}"
+      end
       location
     end
   end
