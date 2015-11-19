@@ -6,16 +6,16 @@ module RackCanonicalHost
   # Redirect Tge rack middleware for redirecting requests to configured
   # hostname
   class Redirect
-    attr_reader :canonical_host
-    def initialize(app, canonical_host)
+    attr_reader :canonical_host, :config
+    def initialize(app, canonical_host, config = {})
       @app = app
       @canonical_host = canonical_host.downcase
+      @config = config
     end
 
     def call(env)
       request = Rack::Request.new(env)
-      requested_host = request.host.downcase
-      return @app.call(env) if requested_host == canonical_host
+      return @app.call(env) if match_host(request)
       headers = {
         'Content-Type' => 'text/html',
         'Content-Length' => '0'
@@ -33,6 +33,19 @@ module RackCanonicalHost
         location = "#{location}?#{request.query_string}"
       end
       location
+    end
+
+    def match_host(request)
+      return true if whitelisted(request)
+      request.host.downcase == canonical_host
+    end
+
+    def whitelisted(request)
+      return false unless config[:whitelist_paths]
+      config[:whitelist_paths].each do |path|
+        return true if path.match(request.fullpath)
+      end
+      false
     end
   end
 end

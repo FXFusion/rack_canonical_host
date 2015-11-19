@@ -3,8 +3,11 @@ require 'helpers/mock_app'
 
 describe RackCanonicalHost::Redirect do
   let!(:inner_app) { RackCanonicalHost::MockApp.new }
+  let(:whitelist) { [%r{\/health$}] }
   let!(:app) do
-    RackCanonicalHost::Redirect.new(inner_app, 'www.fivewalls.com')
+    RackCanonicalHost::Redirect.new(inner_app,
+                                    'www.fivewalls.com',
+                                    whitelist_paths: whitelist)
   end
 
   it 'has a version number' do
@@ -22,6 +25,12 @@ describe RackCanonicalHost::Redirect do
     get '/hello', { name: 'Buddy' }, 'HTTP_HOST' => 'fivewalls.ca'
     expect(last_response.status).to eq(301)
     expect(last_response.location).to eq('http://www.fivewalls.com/hello?name=Buddy')
+  end
+
+  it 'Does not redirect whitelisted requests' do
+    get '/health', {}, 'HTTP_HOST' => 'fivewalls.ca'
+    expect(last_response).to be_ok
+    expect(last_request.path).to eq('/health')
   end
 
   it 'Redirect root request' do
